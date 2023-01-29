@@ -1,0 +1,23 @@
+.container {
+  width: 80%;
+  margin: 0 auto;
+}
+
+h2 {
+  margin-bottom: 40px;
+}
+
+hr {
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+#total-price {
+  margin-top: 50px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#place-order-btn {
+  margin-top: 20px;
+}

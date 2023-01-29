@@ -1,0 +1,49 @@
+version: '3.1'
+services:
+  web:
+    image: public.ecr.aws/nginx/nginx
+    ports:
+      - "81:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./app:/app
+    depends_on:
+      - php
+      - mysql
+  php:
+    build:
+      context: .
+      dockerfile: PHP.Dockerfile
+    volumes:
+      - ./app:/app
+    depends_on:
+      - mysql
+
+  mysql:
+    image: public.ecr.aws/bitnami/mariadb:latest
+    ports:
+      - '3307:3306'
+    environment:
+      MARIADB_ROOT_PASSWORD: 'root'
+      MARIADB_USER: 'mohammad'
+      MARIADB_PASSWORD: 'password'
+      MARIADB_DATABASE: 'karajfood'
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    
+
+  phpmyadmin:
+    image: public.ecr.aws/bitnami/phpmyadmin:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      PMA_ARBITRARY: 1
+      PMA_HOST: mysql
+      PMA_USER: 'root'
+      PMA_PASSWORD: 'root'
+    ports:
+      - '83:8080'
+      - '443:8443'
+    depends_on:
+      - mysql
+volumes:
+  mariadb-data:
