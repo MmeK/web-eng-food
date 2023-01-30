@@ -1,3 +1,15 @@
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get("code");
+if (code) {
+  message = "";
+  switch (code) {
+    case "401":
+      message = "Please Log in before checkout.";
+  }
+  if (!alert(message)) {
+    window.location.replace("/");
+  }
+}
 let cart = {
   items: [], // Items in the cart
   total: 0, // Total cost of items in the cart
@@ -19,19 +31,116 @@ fetch("/php/food.php")
 
     // Loop through the data and generate HTML for each menu item
     data.forEach((item) => {
-      const menuItemHTML = `
-            <div class="col-md-4 menu-item">
-                <img src="${item.image}" alt="${item.name}" class="img-fluid">
-                <h4>${item.name}</h4>
-                <p>${item.description}</p>
-                <div class="menu-item-footer d-flex align-items-center flex-row gap-2 mb-3">
-                    <span class="d-block menu-item-quantity">${item.quantity}</span>
-                    <span class="d-block menu-item-price">$${item.price}</span>
-                    <button class="d-block add-to-cart-btn btn btn-primary" onclick="addToCart" data-item-price=${item.price} data-item-id="${item.id}">Add to Cart</button>
-                </div>
-            </div>
-        `;
-      menuItemsContainer.innerHTML += menuItemHTML;
+      item.quantity -= cart.items.filter(
+        (itemInCart) => item.id === itemInCart.id
+      ).length;
+
+      const updateUI = function (count) {
+        quantityElement.textContent = count;
+        if (count <= 0) {
+          addToCartBtn.toggleAttribute("disabled");
+        }
+      };
+
+      // Create elements separately and append it to parent
+      const itemElement = document.createElement("div");
+      itemElement.classList.add(
+        "card",
+        "col-lg-5",
+        "menu-item",
+        "px-2",
+        "text-right",
+        "mb-3"
+      );
+
+      // Create the label elements for image, heading, description, ingredients, ratings and itemElement
+
+      const descriptionLabelElement = document.createElement("label");
+      descriptionLabelElement.textContent = "Description:";
+
+      const ingredientsLabelElement = document.createElement("label");
+      ingredientsLabelElement.textContent = "Ingredients:";
+
+      const ratingsLabelElement = document.createElement("label");
+      ratingsLabelElement.textContent = "Rating:";
+
+      // Create the item elements
+      const imageElement = document.createElement("img");
+      imageElement.classList.add("img-fluid");
+      imageElement.src = item.image;
+      imageElement.alt = item.name;
+
+      const headingElement = document.createElement("h4");
+      headingElement.textContent = item.name;
+
+      const descriptionElement = document.createElement("p");
+      descriptionElement.textContent = item.description;
+
+      const ingredientsElement = document.createElement("p");
+      ingredientsElement.textContent = item.ingredients;
+
+      // Create ratingsElement and set it's textContent
+      const ratingsElement = document.createElement("p");
+      ratingsElement.textContent = item.rating ? item.rating : "No Rating";
+
+      const menuItemFooter = document.createElement("div");
+      menuItemFooter.classList.add(
+        "d-flex",
+        "menu-item-footer",
+        "align-items-center",
+        "flex-row",
+        "gap-2",
+        "mb-3"
+      );
+
+      const quantityLabelElement = document.createElement("label");
+      quantityLabelElement.textContent = "Count:";
+
+      const quantityElement = document.createElement("p");
+      quantityElement.classList.add("d-block", "menu-item-quantity");
+      quantityElement.textContent = item.quantity;
+
+      const priceLabelElement = document.createElement("label");
+      priceLabelElement.textContent = "Price:";
+
+      const priceElement = document.createElement("p");
+      priceElement.classList.add("d-block", "menu-item-price");
+      priceElement.textContent = "$" + item.price;
+
+      const addToCartBtn = document.createElement("button");
+      addToCartBtn.classList.add(
+        "d-block",
+        "add-to-cart-btn",
+        "btn",
+        "btn-primary",
+        "mb-2"
+      );
+
+      // Append all elements to the parent itemElement
+      itemElement.append(
+        imageElement,
+        headingElement,
+        descriptionLabelElement,
+        descriptionElement,
+        ingredientsLabelElement,
+        ingredientsElement,
+        ratingsLabelElement,
+        ratingsElement,
+        menuItemFooter,
+        quantityLabelElement,
+        quantityElement,
+        priceLabelElement,
+        priceElement,
+        addToCartBtn
+      );
+
+      addToCartBtn.addEventListener("click", () => addToCart(item, updateUI));
+      addToCartBtn.textContent = "Add to Cart";
+
+      // append elements
+      updateUI(item.quantity);
+
+      menuItemsContainer.appendChild(itemElement);
     });
   })
   .catch((error) => console.error(error));
@@ -87,7 +196,6 @@ loginForm.addEventListener("submit", async (event) => {
 
   // Parse response as JSON
   const data = await response.json();
-  console.log(data);
   // Check for success
   if (response.status == 200) {
     // Show success message
@@ -101,9 +209,20 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
-function addToCart(event) {
-  const { id, price } = event.target.dataset;
-  console.log(id, price);
+function addToCart(item, callbackUI) {
+  // Add item to cart
+  if (item.quantity > 0) {
+    cart.items.push(item);
+    // Update total and count
+    cart.total += parseInt(item.price);
+    cart.count++;
+    item.quantity--;
+    //TODO: UPDATE UI
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("storage"));
+  }
+  callbackUI(item.quantity);
 }
 
 // Create a reference to the floating action button and badge
@@ -111,32 +230,36 @@ const fab = document.querySelector(".fixed-action-btn");
 const badge = document.querySelector("#cart-item-count");
 
 // Get the number of items in the cart from local storage
-let itemsInCart = JSON.parse(localStorage.getItem("cart")) || [];
+let itemsInCart = JSON.parse(localStorage.getItem("cart")).items || [];
 badge.textContent = itemsInCart.length;
 
-// Show or hide the badge based on the number of items in the cart
 if (itemsInCart.length > 0) {
-  badge.style.display = "block";
+  badge.classList.remove("d-none");
+  badge.classList.add("d-block");
 } else {
-  badge.style.display = "none";
+  badge.classList.remove("d-block");
+  badge.classList.add("d-none");
 }
 
 // Listen for a click on the floating action button
 fab.addEventListener("click", function () {
   // Redirect the user to the checkout page
-  window.location.href = "checkout.php";
+  window.location.href = "/checkout.php";
 });
 
 // Listen for updates to the cart and update the badge
 window.addEventListener("storage", function (event) {
-  if (event.key === "cart") {
-    itemsInCart = JSON.parse(event.newValue);
-    badge.textContent = itemsInCart.length;
+  itemsInCart = JSON.parse(localStorage.getItem("cart"));
+  console.log(itemsInCart);
 
-    if (itemsInCart.length > 0) {
-      badge.style.display = "block";
-    } else {
-      badge.style.display = "none";
-    }
+  badge.textContent = itemsInCart.items.length;
+  console.log(badge.textContent);
+
+  if (itemsInCart.items.length > 0) {
+    badge.classList.remove("d-none");
+    badge.classList.add("d-block");
+  } else {
+    badge.classList.remove("d-block");
+    badge.classList.add("d-none");
   }
 });

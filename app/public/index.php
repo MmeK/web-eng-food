@@ -12,14 +12,14 @@ if ((isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
     <title>Restaurant Project</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/icons/css/line-awesome-font-awesome.min.css">
+    <link rel="stylesheet" href="/icons/css/line-awesome.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
     <nav class="navbar px-4 navbar-expand-lg ">
-        <a class="navbar-brand" href="#">Restaurant Project</a>
+        <a class="navbar-brand" href="/"><img src="/images/logo.png" alt="karaj restaurant" srcset=""></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -43,6 +43,9 @@ if ((isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
                     <a class="nav-link" href="/php/logout.php">Logout</a>
                 </li>
                 <?php } elseif ($_SESSION['logged_in'] == 'user') {?>
+                <li class="nav-item">
+                    <a class="nav-link" href="/account.php">Account</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/checkout.php">Checkout</a>
                 </li>
@@ -176,9 +179,9 @@ if ((isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
   </div>
 </div>
 
-<div class="fixed-action-btn">
+<div class="fixed-action-btn" style="z-index: 10;">
   <a class="btn-floating btn-large red">
-    <i class="las la-2x la-shopping-cart"></i>
+    <i class="las la-3x la-shopping-cart"></i>
   </a>
   <span class="d-none position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-item-count">0</span>
 </div>
@@ -188,13 +191,15 @@ if ((isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
     <div id="menu" class="my-4 container">
         <div class="row">
             <h2 class="text-center">Our Menu</h2>
-            <div id="menu-items" class="row">
+            <div id="menu-items" class="row justify-content-around gap-2">
                 <!-- menu items will be dynamically loaded here -->
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" crossorigin="anonymous"></script>
+
     <script src="js/main.js"></script>
 </body>
 </html>

@@ -8,9 +8,85 @@ $(document).ready(function () {
   });
 });
 
-let menuList = document.querySelector("#menu-items-list");
+const menuList = document.querySelector("#menu-items-list");
+const ordersList = document.querySelector("#order-items-list");
+const usersList = document.querySelector("#user-items-list");
 
 reloadMenuItems();
+reloadOrders();
+reloadUsers();
+
+function reloadUsers() {
+  usersList.textContent = "";
+  fetch("/php/user.php")
+    .then((response) => response.json())
+    .then((data) => {
+      data.forEach((item) => {
+        const row = document.createElement("tr");
+
+        const idCell = document.createElement("td");
+        idCell.textContent = item.id;
+        row.appendChild(idCell);
+
+        const usernameCell = document.createElement("td");
+        usernameCell.textContent = item.username;
+        row.appendChild(usernameCell);
+
+        const emailCell = document.createElement("td");
+        emailCell.textContent = item.email;
+        row.appendChild(emailCell);
+
+        const locationCell = document.createElement("td");
+        locationCell.textContent = item.location;
+        row.appendChild(locationCell);
+
+        // <input class="form-check-input" type="checkbox" value="" id="flexCheckCheckedDisabled" checked disabled>
+        const is_adminCell = document.createElement("td");
+        const adminCheck = document.createElement("input");
+        adminCheck.setAttribute("type", "checkbox");
+        item.is_admin && adminCheck.toggleAttribute("checked");
+        adminCheck.setAttribute("disabled", true);
+        adminCheck.className += ". form-check-input";
+        is_adminCell.appendChild(adminCheck);
+        row.appendChild(is_adminCell);
+
+        usersList.appendChild(row);
+      });
+    });
+}
+
+function reloadOrders() {
+  ordersList.textContent = "";
+  fetch("/php/order.php")
+    .then((response) => response.json())
+    .then((data) => {
+      data.forEach((item) => {
+        const row = document.createElement("tr");
+
+        const idCell = document.createElement("td");
+        idCell.textContent = item.id;
+        row.appendChild(idCell);
+
+        const usernameCell = document.createElement("td");
+        usernameCell.textContent = item.username;
+        row.appendChild(usernameCell);
+
+        const total_priceCell = document.createElement("td");
+        total_priceCell.textContent = item.total_price;
+        row.appendChild(total_priceCell);
+
+        const timestampCell = document.createElement("td");
+        timestampCell.textContent = item.timestamp;
+        row.appendChild(timestampCell);
+
+        const ratingCell = document.createElement("td");
+        ratingCell.textContent = item.rating;
+        row.appendChild(ratingCell);
+
+        ordersList.appendChild(row);
+      });
+    });
+}
 
 function reloadMenuItems() {
   menuList.textContent = "";
@@ -74,21 +150,50 @@ function reloadMenuItems() {
           }
         });
         editBtn.addEventListener("click", () => {
-          // show edit modal
+          const editItemForm = $("#editItemForm");
+          editItemForm.find("#name").val(item.name);
+          editItemForm.find("#price").val(item.price);
+          editItemForm.find("#quantity").val(item.quantity);
+          editItemForm.find("#ingredients").val(item.ingredients);
+          editItemForm.find("#description").val(item.description);
+          editItemForm.find("#image-preview").attr({ src: item.image });
+          editItemForm.find("#editItemBtn").click(function (event) {
+            event.preventDefault();
+            // Validate form data
+            const formData = new FormData(
+              document.getElementById("editItemForm")
+            );
+            formData.append("id", item.id);
+            fetch("/php/food.php", {
+              method: "POST",
+              body: formData,
+              headers: {
+                "HTTP-X-REST-METHOD": "EDIT",
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  alert("Item edited successfully!");
+                  // Close the modal
+                  document.getElementById("editItemForm").reset();
+                  $("#editModal").modal("hide");
+                  // Reload menu items
+                  reloadMenuItems();
+                } else {
+                  alert("Error: " + data.message);
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("Error: " + error);
+              });
+          });
         });
 
         menuList.appendChild(row);
       });
     });
-}
-
-// Edit item
-function editItem(element) {
-  // Get the item ID from the button data attribute
-  var itemId = $(element).data("id");
-
-  // Show the edit modal
-  // ...
 }
 
 $("#addItemForm").submit(function (event) {

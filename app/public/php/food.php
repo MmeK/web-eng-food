@@ -30,6 +30,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
 
+        } else if (getallheaders()['Http-X-Rest-Method'] == 'EDIT') {
+            // print_r($_POST);
+            $id = $_POST['id'];
+            $name = $_POST['name'] ?? '';
+            $price = $_POST['price'] ?? '';
+            $description = $_POST['description'] ?? '';
+            $quantity = $_POST['quantity'] ?? '';
+            $ingredients = $_POST['ingredients'] ?? '';
+            $image = $_FILES['image']['name'] ?? '';
+
+            // Validate the parameters
+            if (empty($id) || !is_numeric($id)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'The id parameter is required and must be a number']);
+                exit();
+            }
+
+            // Prepare the update query
+            $query = "UPDATE foods SET";
+
+            $bindings = [];
+
+            if (!empty($name)) {
+                $query .= " name = :name,";
+                $bindings[':name'] = $name;
+            }
+
+            if (!empty($price)) {
+                $query .= " price = :price,";
+                $bindings[':price'] = $price;
+            }
+
+            if (!empty($description)) {
+                $query .= " description = :description,";
+                $bindings[':description'] = $description;
+            }
+
+            if (!empty($quantity)) {
+                $query .= " quantity = :quantity,";
+                $bindings[':quantity'] = $quantity;
+            }
+
+            if (!empty($ingredients)) {
+                $query .= " ingredients = :ingredients,";
+                $bindings[':ingredients'] = $ingredients;
+            }
+
+            // Upload the image
+            if (!empty($image)) {
+                $image_name = uniqid() . '.' . pathinfo($image, PATHINFO_EXTENSION);
+                $image_path = '../images/' . $image_name;
+
+                if ($_FILES['image']['error'] == 0) {
+                    if (move_uploaded_file($_FILES['image']['tmp_name'], $image_path)) {
+                        $query .= " image = :image,";
+                        $bindings[':image'] = $image_path;
+                    }
+                }
+
+            }
+            // Remove the trailing comma
+            $query = rtrim($query, ',');
+
+            $query .= " WHERE id = :id";
+            $bindings[':id'] = $id;
+
+            // Prepare the statement
+            $stmt = $pdo->prepare($query);
+
+            // Execute the query with the bindings
+            $stmt->execute($bindings);
+
+            // Check if the query was successful
+            if ($stmt->rowCount() === 0) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'The food with id ' . $id . ' was not found']);
+                exit();
+            }
+
+            // Return success
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => 'The food was updated successfully']);
+
         }
     } else {
         // validate and sanitize the request data
@@ -90,12 +173,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $stmt = $pdo->prepare("SELECT * FROM foods");
-    $stmt->execute();
-    $foods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (isset($_GET['food_id'])) {
+        $id = $_GET['food_id'];
+        $stmt = $pdo->prepare("SELECT * FROM foods WHERE id = :id");
+        $stmt->bindValue('id', $id);
+        $stmt->execute();
+        $food = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    header('Content-Type: application/json');
-    echo json_encode($foods);
+        header('Content-Type: application/json');
+        echo json_encode($food);
+    } else {
+        $stmt = $pdo->prepare("SELECT foods.*, AVG(orders.rating) as rating FROM foods
+        left join order_items on order_items.food_id=foods.id
+        left join orders on orders.id=order_items.order_id
+        GROUP BY foods.id");
+        $stmt->execute();
+        $foods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        header('Content-Type: application/json');
+        echo json_encode($foods);
+    }
 } else {
     echo json_encode([
         'success' => false,

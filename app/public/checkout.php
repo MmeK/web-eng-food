@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'user')) {
-    header('Location: index.php');
+    header('Location: index.php?code=401');
 }
 if ((isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
     header('Location: /admin/index.php');
@@ -77,8 +77,9 @@ if ((isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
         </thead>
         <tbody id="checkout-items"></tbody>
       </table>
+      <h4 class="text-center" id="total-price"></h4>
       <hr />
-      <h4 class="text-right" id="total-price"></h4>
+
       <form id="checkout-form">
   <div class="container d-flex justify-content-between form-group">
     <button type="submit" class="btn btn-primary">Place Order</button>

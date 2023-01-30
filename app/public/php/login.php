@@ -23,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (password_verify($password, $hashed_password)) {
                 echo json_encode(array("message" => "Login Successful"));
                 $_SESSION['logged_in'] = ($row["is_admin"] ? "admin" : "user");
+                $_SESSION['uid'] = $row["id"];
             } else {
                 echo json_encode(array("message" => "Incorrect Password"));
             }

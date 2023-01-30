@@ -125,7 +125,6 @@ if (!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
                             </button>
                         </div>
                         <form id="editItemForm" enctype="multipart/form-data">
-
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="name">Name</label>
@@ -150,6 +149,7 @@ if (!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
                             <div class="form-image mb-3">
                                 <label  class="image-label" for="image">Item Image</label>
                                 <input type="file" class="form-control-file" id="image" name="image" required>
+                                <img id="image-preview" class="d-block my-4" src="" style="width: 100%; min-height:100px; height:fit-content;" alt="">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -166,14 +166,51 @@ if (!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
         <div class="col-md-9 d-none">
           <div class="mx-2 card">
             <div class="card-body">
-                Orders
+            <div id="order-items" class="tab-pane">
+                    <h3 class="text-center">Order History</h3>
+                    <br>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Total Price</th>
+                            <th>Timestamp</th>
+                            <th>Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-items-list">
+                            <!-- orders will be fetched and appended here -->
+                        </tbody>
+                        </table>
+                      </div>
+                  </div>
             </div>
           </div>
         </div>
         <div class="col-md-9 d-none">
           <div class="mx-2 card">
             <div class="card-body">
-                Users
+            <div id="users-items" class="tab-pane">
+                    <h3 class="text-center">Users</h3>
+                    <br>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Location</th>
+                            <th>Is Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-items-list">
+                            <!-- orders will be fetched and appended here -->
+                        </tbody>
+                        </table>
+                    </div>
             </div>
           </div>
         </div>
@@ -186,44 +223,3 @@ if (!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == 'admin')) {
     <script src="../js/admin.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-<!--
-
-<div class="container">
-  <div class="row">
-    <div class="col-12">
-      <div class="card-group">
-        <div class="card">
-          <div class="card-header">
-            <h4 class="card-title">Menu Items</h4>
-          </div>
-          <div class="card-body">
-            <!-- Tab content for menu items goes here
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <h4 class="card-title">Users</h4>
-          </div>
-          <div class="card-body">
-            <!-- Tab content for users goes here
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <h4 class="card-title">Orders</h4>
-          </div>
-          <div class="card-body">
-            <!-- Tab content for orders goes here
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div> -->
